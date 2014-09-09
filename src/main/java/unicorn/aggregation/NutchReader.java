@@ -1,0 +1,88 @@
+package unicorn.aggregation;
+
+import java.io.IOException;
+import java.util.Properties;
+
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
+import org.apache.nutch.crawl.CrawlDatum;
+import org.apache.nutch.crawl.CrawlDb;
+import org.apache.nutch.parse.ParseText;
+
+import cascading.flow.Flow;
+import cascading.flow.FlowDef;
+import cascading.flow.FlowProcess;
+import cascading.flow.hadoop.HadoopFlowConnector;
+import cascading.operation.DebugLevel;
+import cascading.operation.aggregator.Count;
+import cascading.operation.regex.RegexSplitGenerator;
+import cascading.pipe.Each;
+import cascading.pipe.Every;
+import cascading.pipe.GroupBy;
+import cascading.pipe.Pipe;
+import cascading.property.AppProps;
+import cascading.scheme.Scheme;
+import cascading.scheme.SinkCall;
+import cascading.scheme.SourceCall;
+import cascading.scheme.hadoop.SequenceFile;
+import cascading.scheme.hadoop.TextDelimited;
+import cascading.scheme.hadoop.WritableSequenceFile;
+
+import cascading.tap.Tap;
+import cascading.tap.hadoop.Hfs;
+import cascading.tuple.Fields;
+
+public class NutchReader {
+
+	public static void main(String[] args) {
+
+		String inputPath = args[0];
+		String outputPath = args[1];
+
+		Properties properties = new Properties();
+		AppProps.setApplicationJarClass(properties, NutchReader.class);
+		HadoopFlowConnector flowConnector = new HadoopFlowConnector(properties);
+
+		// read data from nutch and create a field "rawdata"
+		Fields nutchfield = new Fields("url", "parse-text");
+		WritableSequenceFile schema = new WritableSequenceFile(nutchfield, ParseText.class, Text.class);
+		Tap nutchTap = new Hfs(schema, inputPath);
+
+		// define output tap
+		Tap wcTap = new Hfs(new TextDelimited(true,"\t"), outputPath);
+		
+		
+		// Operation to split the data
+		Fields token = new Fields("token");
+		Fields text = new Fields("text");
+		Fields output = new Fields("url", "token");
+		RegexSplitGenerator splitter = new RegexSplitGenerator(token,"[ \\[\\]\\(\\).,]");
+
+		Pipe docPipe = new Each("token", new Fields("parse-text"), splitter, output);
+
+		docPipe = new Each(docPipe, output, new ParseData(output), Fields.RESULTS);
+		
+		// word count 
+		
+		Pipe wcPipe = new Pipe("copy", docPipe);
+		
+/*		Pipe wcPipe = new Pipe("wc",docPipe);
+		wcPipe = new GroupBy(wcPipe, token);
+		wcPipe = new Every(wcPipe, Fields.ALL, new Count(), Fields.ALL);*/
+		
+		
+		
+
+		FlowDef flowDef = FlowDef.flowDef()
+				.setName("wc")
+				.addSource(docPipe, nutchTap)
+				.addTailSink(wcPipe, wcTap);
+		
+		flowDef.setDebugLevel(DebugLevel.VERBOSE);
+		
+		Flow wcFlowDot = flowConnector.connect(flowDef);
+		wcFlowDot.writeDOT("dot/wc.dot");
+		wcFlowDot.complete();
+
+	}
+}
