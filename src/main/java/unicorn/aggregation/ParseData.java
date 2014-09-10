@@ -28,8 +28,7 @@ import edu.stanford.nlp.util.CoreMap;
 public class ParseData extends BaseOperation implements Function {
 
 	public static Logger LOG = LoggerFactory.getLogger(ParseData.class);
-	
-	
+
 	public ParseData(Fields fieldDeclaration) {
 		super(2, fieldDeclaration);
 	}
@@ -40,20 +39,21 @@ public class ParseData extends BaseOperation implements Function {
 		TupleEntry argument = functionCall.getArguments();
 		String url = argument.getString(0);
 		String token = argument.getString(1);
+
 		if (token.length() > 0) {
-			if (StringUtils.isAlphanumeric(token)) {
-				token = lowerCase(token);
+			token = lowerCase(token);
 				String nlp = NLP(token);
-				if ( nlp != null){
-				Tuple result = new Tuple();
-				result.add(url);
-				result.add(nlp);
-				
-				functionCall.getOutputCollector().add(result);
-				}else{
+				if (nlp != null) {
+					LOG.info("NO STOP WORD {} ", nlp);
+					Tuple result = new Tuple();
+					result.add(url);
+					result.add(nlp);
+
+					functionCall.getOutputCollector().add(result);
+				} else {
 					return;
 				}
-			}
+			
 		}
 
 	}
@@ -62,8 +62,8 @@ public class ParseData extends BaseOperation implements Function {
 		return token.trim().toLowerCase();
 	}
 
-	public String NLP(String text){
-		
+	public String NLP(String text) {
+
 		Stopwords stop = new Stopwords();
 		StanfordCoreNLP pipeline;
 		Properties props;
@@ -75,8 +75,8 @@ public class ParseData extends BaseOperation implements Function {
 		// StanfordCoreNLP loads a lot of models, so you probably
 		// only want to do this once per execution
 		pipeline = new StanfordCoreNLP(props);
-		
-		//List<String> lemmas = new LinkedList<String>();
+
+		// List<String> lemmas = new LinkedList<String>();
 		String documentText = text;
 		// create an empty Annotation just with the given text
 		Annotation document = new Annotation(documentText);
@@ -87,6 +87,8 @@ public class ParseData extends BaseOperation implements Function {
 		// Iterate over all of the sentences found
 		List<CoreMap> sentences = document.get(SentencesAnnotation.class);
 		String lemma = null;
+		LOG.info("NLP Testing {}", documentText);
+
 		for (CoreMap sentence : sentences) {
 
 			// Iterate over all tokens in a sentence
@@ -94,22 +96,23 @@ public class ParseData extends BaseOperation implements Function {
 
 				// Retrieve and add the lemma for each word into the list of
 				// lemmas
-				 lemma = token.get(LemmaAnnotation.class).toLowerCase();
-//				LOG.info("DATA {}",lemma);
-				 if (StringUtils.isAlpha(lemma)) {
-						if (!stop.isStopword(lemma)) {
-//							LOG.info("DATA OUTPUT {}",lemma);
-							return lemma;
-					
-						}
+				lemma = token.get(LemmaAnnotation.class).toLowerCase();
+				LOG.info("DATA {}", lemma);
+				if (StringUtils.isAlpha(lemma)) {
+					if (!stop.isStopword(lemma)) {
+						 LOG.info("DATA OUTPUT {}",lemma);
+						return lemma;
+
+					}else{
+						lemma = null;
 					}
+				}else{
+					lemma = null;
+				}
 			}
 		}
-		
-		
-
 		return lemma;
 
 	}
-	
+
 }
