@@ -48,11 +48,11 @@ public class NutchReader {
 	//	String tfoutput = args[2];
 		
 		
-		/*Properties properties = new Properties();
+		Properties properties = new Properties();
 		AppProps.setApplicationJarClass(properties, NutchReader.class);
-		HadoopFlowConnector flowConnector = new HadoopFlowConnector(properties);
-*/
-		FlowConnector flowConnector = new HadoopFlowConnector();
+		FlowConnector flowConnector = new HadoopFlowConnector(properties);
+
+	//	FlowConnector flowConnector = new HadoopFlowConnector();
 		
 		// read data from nutch and create a field "rawdata"
 		Fields nutchfield = new Fields("url", "parse-text");
