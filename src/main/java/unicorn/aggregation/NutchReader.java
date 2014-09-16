@@ -112,7 +112,7 @@ public class NutchReader {
 				.addTailSink(dPipe, wcTap);
 		
 		flowDef.setDebugLevel(DebugLevel.VERBOSE);
-		
+		//test
 		Flow wcFlowDot = flowConnector.connect(flowDef);
 		wcFlowDot.writeDOT("dot/wc.dot");
 		wcFlowDot.complete();
