@@ -50,7 +50,7 @@ public class NutchReader {
 		
 		Properties properties = new Properties();
 		AppProps.setApplicationJarClass(properties, NutchReader.class);
-		FlowConnector flowConnector = new HadoopFlowConnector(properties);
+		HadoopFlowConnector flowConnector = new HadoopFlowConnector(properties);
 
 	//	FlowConnector flowConnector = new HadoopFlowConnector();
 		
@@ -86,7 +86,7 @@ public class NutchReader {
 		tfPipe = new Rename( tfPipe, token, tf_token );
 
 		
-		//Count documents
+		/*//Count documents
 		Fields url = new Fields("url");
 		//current counter
 		Fields tally = new Fields("tally");
@@ -97,9 +97,9 @@ public class NutchReader {
 	    dPipe = new Each(dPipe, new Insert(tally, 1),Fields.ALL);
 	    dPipe = new Each(dPipe, new Insert(rhs_join,1), Fields.ALL);
 	    dPipe = new SumBy(dPipe, tally,rhs_join,n_docs,long.class);
-		//Pipe wcPipe = new Pipe("copy", docPipe);
+*/		Pipe wcPipe = new Pipe("copy", docPipe);
 		
-/*		Pipe wcPipe = new Pipe("wc",docPipe);
+		/*		Pipe wcPipe = new Pipe("wc",docPipe);
 		wcPipe = new GroupBy(wcPipe, token);
 		wcPipe = new Every(wcPipe, Fields.ALL, new Count(), Fields.ALL);*/
 		
@@ -109,7 +109,7 @@ public class NutchReader {
 		FlowDef flowDef = FlowDef.flowDef()
 				.setName("wc")
 				.addSource(docPipe, nutchTap)
-				.addTailSink(dPipe, wcTap);
+				.addTailSink(wcPipe, wcTap);
 		
 		flowDef.setDebugLevel(DebugLevel.VERBOSE);
 		//Flow 
