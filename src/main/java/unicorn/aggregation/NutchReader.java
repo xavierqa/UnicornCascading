@@ -39,6 +39,7 @@ import cascading.tap.hadoop.Hfs;
 import cascading.tap.hadoop.Lfs;
 import cascading.tuple.Fields;
 
+@SuppressWarnings("deprecation")
 public class NutchReader {
 
 	public static void main(String[] args) {
@@ -57,10 +58,10 @@ public class NutchReader {
 		// read data from nutch and create a field "rawdata"
 		Fields nutchfield = new Fields("url", "parse-text");
 		WritableSequenceFile schema = new WritableSequenceFile(nutchfield, ParseText.class, Text.class);
-		Tap nutchTap = new Lfs(schema, inputPath);
+		Tap nutchTap = new Hfs(schema, inputPath);
 
 		// define output tap
-		Tap wcTap = new Lfs(new TextDelimited(true,"\t"), outputPath);
+		Tap wcTap = new Hfs(new TextDelimited(true,"\t"), outputPath);
 		
 		// TF path 
 		//Tap tfPath = new Lfs (new TextDelimited(true,"\t"),tfoutput);
