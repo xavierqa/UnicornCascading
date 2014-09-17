@@ -98,7 +98,7 @@ public class NutchReader {
 	    dPipe = new Each(dPipe, new Insert(tally, 1),Fields.ALL);
 	    dPipe = new Each(dPipe, new Insert(rhs_join,1), Fields.ALL);
 	    dPipe = new SumBy(dPipe, tally,rhs_join,n_docs,long.class);
-*/		Pipe wcPipe = new Pipe("copy", docPipe);
+*/		Pipe wcPipe = new Pipe("copy", docPipe); 
 		
 		/*		Pipe wcPipe = new Pipe("wc",docPipe);
 		wcPipe = new GroupBy(wcPipe, token);
