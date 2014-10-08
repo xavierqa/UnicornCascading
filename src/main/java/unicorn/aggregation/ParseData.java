@@ -42,17 +42,19 @@ public class ParseData extends BaseOperation implements Function {
 
 		if (token.length() > 0) {
 			token = lowerCase(token);
-				String nlp = NLP(token);
-				if (nlp != null) {
-					LOG.info("NO STOP WORD {} ", nlp);
-					Tuple result = new Tuple();
-					result.add(url);
-					result.add(nlp);
+			Tuple result = new Tuple();
+			result.add(url);
+			result.add(token);
 
-					functionCall.getOutputCollector().add(result);
-				} else {
-					return;
-				}
+			functionCall.getOutputCollector().add(result);
+//				String nlp = NLP(token);
+//				if (nlp != null) {
+//					LOG.info("NO STOP WORD {} ", nlp);
+//					//
+//					functionCall.getOutputCollector().add(result);
+//				} else {
+//					return;
+//				}
 			
 		}
 
